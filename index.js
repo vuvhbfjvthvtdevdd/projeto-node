@@ -1,26 +1,27 @@
 const express = require('express');
 const app = express();
-const { Pool } = require('pg');
+const path = require('path');
+const client = require('./dbc');
 
 
-const pool = new Pool({
-    user: `vuvhbfjvthvt`,
-    database: `hipo`,
-    host: `localhost`,
-    password: `123901901abc`,
-    port: 5432,
-});
+app.use(express.urlencoded({extended: true}));
 
-async function Conectar() {
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, '/public/index.html'));
+})
+
+
+app.post("/enviar", async (req, res) => {
+    const { usuario, senha } = req.body;
+
     try {
-        const res = await pool.query('SELECT NOW()');
-        console.log('Conexão bem sucedida');
-        console.log('Horario: ', res.rows[0].now);
-        await pool.end();
+        await client.query(`INSERT INTO login (usuario, senha) VALUES ($1, $2)`, [usuario, senha]);
+        res.send(`usuario ${usuario} adicionado no banco de dados`);
     }
     catch (err) {
-        console.error('conexão mal sucedida');
+        console.error(err)
     }
-}
+})
 
-Conectar();
+
+app.listen(3030);
