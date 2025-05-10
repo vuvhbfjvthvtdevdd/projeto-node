@@ -30,8 +30,18 @@ app.post("/gerenciar", async (req, res) => {
 app.get("/lista", async (req, res) => {
     try {
         const list = await client.query(`SELECT * FROM todolist`);
-        res.send(list.rows);
-        console.log(list.rows);
+        
+        let comparation = list.rows == 0
+        ? (() => {
+            res.send(` `);
+        })()
+        : list.rows > 0 ? (() => {
+            res.send(list.rows);
+            console.log(list.rows);
+        })()
+        : (() => {
+            console.error(`error`);
+        })();
     }
     catch (err) {
         res.send(err);
@@ -39,4 +49,23 @@ app.get("/lista", async (req, res) => {
     }
 });
 
+
+app.get("/deletar", (req, res) => {
+    res.sendFile(path.join(__dirname, "/public/formD.html"))
+})
+
+
+app.post("/gerenciarD", async (req, res) => {
+    try {
+        const idd = parseInt(req.body.idd);
+
+        await client.query(`DELETE FROM todolist WHERE id = $1`, [idd]);
+
+        console.log(`The task where id is ${idd} is deleted`);
+        res.send(`The task where id is ${idd} is deleted`);
+    }
+    catch (err) {
+        console.error(err);
+    }
+})
 app.listen(3030);
